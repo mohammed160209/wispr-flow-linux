@@ -99,10 +99,11 @@ sites = [
 		+ Q + r'Showing auto polish picker' + Q + r'[^{}]{0,200}?'
 		+ fwd('contextMenuWindow', 'ShowAutoPolishPicker')
 		+ r'(?P<arg>(?P=p))\)')),
-	("B fetch-link picker", 1, "in", re.compile(
-		r'\.ShowFetchLinkPicker,!1,(?P<p>' + ID + r')=>\{[^{}]{0,300}?'
-		+ fwd('contextMenuWindow', 'ShowFetchLinkPicker')
-		+ r'(?P<arg>(?P=p))\)')),
+	("B live-meeting hover", 1, "in", re.compile(
+		Q + r'Showing live meeting hover' + Q + r'[\s\S]{0,400}?'
+		+ r'const ' + ID + r'=(?P<reg>' + ID + r'(?:\.' + ID + r')*)\.contextMenuWindow;'
+		+ r'[\s\S]{0,300}?' + CALLEE + r'\(' + ID + r',' + ID + r'\.' + ID + r'\.ShowLiveMeetingHover,'
+		+ r'(?P<arg>' + ID + r')\)')),
 	("C extension bubble menu", 1, "in", re.compile(
 		r'\.ShowExtensionContextMenu,!1,(?P<p>' + ID + r')=>\{'
 		+ NO_ARROW + r'{0,300}?' + Q + r'Showing extension context menu' + Q

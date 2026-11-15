@@ -69,6 +69,7 @@ MARKERS=(
   "autostart: linux login items backed by an XDG autostart entry|F|WISPR_LINUX_AUTOSTART"
   "status-compact: linux status window shrunk to pill size|F|WISPR_LINUX_STATUS_COMPACT"
   "status-picker-anchor: pickers offset by the status window on Wayland|F|WISPR_LINUX_PICKER_ANCHOR"
+  "system-audio: linux native system audio capture enabled|F|WISPR_LINUX_SYSTEM_AUDIO"
 )
 
 missing=0

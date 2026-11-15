@@ -226,6 +226,8 @@ step2_stage_resources() {
       --exclude 'Release/Wispr Flow Helper.exe' \
       "$RESOURCES_SRC/" "$STAGE/" 2>/dev/null \
       || cp -a "$RESOURCES_SRC/." "$STAGE/"   # fallback if rsync absent
+    chmod -R u+rwX,go+rX,go-w "$STAGE" \
+      || die "Failed to normalize permissions under $STAGE"
   else
     warn "Resources source missing -- skipping copy."
   fi
@@ -374,6 +376,10 @@ step3_patch_bundle() {
     auto "Running linux-status-compact.sh on $target_bundle"
     bash "$SCRIPT_DIR/patches/linux-status-compact.sh" "$target_bundle" \
       || die "linux-status-compact.sh failed -- see its output above."
+    # Enable native PipeWire/PulseAudio system audio loopback (--capture-system-audio) on Linux.
+    auto "Running linux-system-audio.sh on $target_bundle"
+    bash "$SCRIPT_DIR/patches/linux-system-audio.sh" "$target_bundle" \
+      || die "linux-system-audio.sh failed -- see its output above."
 
     # Renderer + preload patches live alongside the main bundle under .webpack/.
     local webpack_root="${target_bundle%/main/index.js}"

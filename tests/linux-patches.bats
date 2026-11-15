@@ -1351,7 +1351,7 @@ JS
 	status_bounds_1209 > "$FIX"
 	run bash "$PATCH_DIR/linux-status-compact.sh" "$FIX"
 	[[ "$status" -eq 0 ]]
-	grep -qF 'return(/*WISPR_LINUX_STATUS_COMPACT*/"linux"===process.platform)?{x:u+(h-200)/2,y:p+m-110,width:200,height:110}:{x:u+(h-l)/2,y:p+m-o,width:l,height:o}' "$FIX"
+	grep -qF 'return(/*WISPR_LINUX_STATUS_COMPACT*/"linux"===process.platform&&!process.argv.includes("--ozone-platform=x11"))?{x:u+(h-200)/2,y:p+m-110,width:200,height:110}:{x:u+(h-l)/2,y:p+m-o,width:l,height:o}' "$FIX"
 	# the top branch (y:p+a) is untouched
 	grep -qF 'if("top"===t)return{x:u+(h-l)/2,y:p+a,width:l,height:o}' "$FIX"
 	[[ "$(grep -o 'WISPR_LINUX_STATUS_COMPACT' "$FIX" | wc -l)" -eq 1 ]]
@@ -1382,7 +1382,7 @@ function b(e,t){const{x:o,y:c,width:l,height:d}=e.workArea,s=320;return{x:o+(l-4
 JS
 	run bash "$PATCH_DIR/linux-status-compact.sh" "$FIX"
 	[[ "$status" -eq 0 ]]
-	grep -qF 'return(/*WISPR_LINUX_STATUS_COMPACT*/"linux"===process.platform)?{x:o+(l-200)/2,y:c+d-110,width:200,height:110}:{x:o+(l-440)/2,y:c+d-s,width:440,height:s}' "$FIX"
+	grep -qF 'return(/*WISPR_LINUX_STATUS_COMPACT*/"linux"===process.platform&&!process.argv.includes("--ozone-platform=x11"))?{x:o+(l-200)/2,y:c+d-110,width:200,height:110}:{x:o+(l-440)/2,y:c+d-s,width:440,height:s}' "$FIX"
 	node_check "$FIX"
 }
 
@@ -1409,4 +1409,38 @@ JS
 	[[ "$status" -ne 0 ]]
 	[[ "$output" == *'expected 1 status-bounds anchor, found 2'* ]]
 	! grep -q 'WISPR_LINUX_STATUS_COMPACT' "$FIX"
+}
+
+# =============================================================================
+# linux-system-audio.sh
+# =============================================================================
+
+system_audio_fixture() {
+	cat <<'JS'
+class m{constructor(e,t=e=>(0,l.spawn)(e,["--capture-system-audio"],{windowsHide:!0,stdio:"pipe",env:{}})){this.callbacks=e,this.launch=t}}
+function H(e,t){if(f.H8){if(!M||!_)throw new Error("Native capture handlers must be registered before capture starts");O?.start(e,(0,A.j)()),console.log("padding-for-body-length-so-regex-matches-realistic-bundle-distance-between-H-and-V-in-module-5419-which-is-over-two-hundred-chars-long-in-the-shipped-webpack-bundle-1234567890-1234567890-1234567890-1234567890")}else(0,y.Bn)(w.RA.hubWindow,b.Y6.StartMeetingSystemCapture,{sessionId:e})}function V(e){return f.H8?(O?.stop(e)??Promise.resolve()):Promise.resolve()}
+JS
+}
+
+@test "system-audio: spreads process.env into --capture-system-audio spawn and widens H/V gates" {
+	system_audio_fixture > "$FIX"
+	run bash "$PATCH_DIR/linux-system-audio.sh" "$FIX"
+	[[ "$status" -eq 0 ]]
+	grep -qF '["--capture-system-audio"],{windowsHide:!0,stdio:"pipe",env:/*WISPR_LINUX_SYSTEM_AUDIO*/process.env}' "$FIX"
+	grep -qF 'function H(e,t){if((f.H8||"linux"===process.platform)){if(!M||!_)throw new Error("Native capture handlers must be registered before capture starts");' "$FIX"
+	grep -qF 'function V(e){return (f.H8||"linux"===process.platform)?' "$FIX"
+	node_check "$FIX"
+}
+
+@test "system-audio: idempotent on second run" {
+	system_audio_fixture > "$FIX"
+	bash "$PATCH_DIR/linux-system-audio.sh" "$FIX"
+	assert_idempotent "$PATCH_DIR/linux-system-audio.sh" "$FIX"
+}
+
+@test "system-audio: bails when --capture-system-audio anchor is missing" {
+	echo 'function H(e,t){}' > "$FIX"
+	run bash "$PATCH_DIR/linux-system-audio.sh" "$FIX"
+	[[ "$status" -ne 0 ]]
+	! grep -q 'WISPR_LINUX_SYSTEM_AUDIO' "$FIX"
 }

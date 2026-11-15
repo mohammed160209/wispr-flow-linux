@@ -76,7 +76,7 @@ if len(ms) != 1:
 m = ms[0]
 o, l, c, d = m['o'], m['l'], m['c'], m['d']
 text = (
-	'return(/*' + marker + '*/"linux"===process.platform)'
+	'return(/*' + marker + '*/"linux"===process.platform&&!process.argv.includes("--ozone-platform=x11"))'
 	f'?{{x:{o}+({l}-200)/2,y:{c}+{d}-110,width:200,height:110}}'
 	':' + m.group(0)[len('return'):]
 )
@@ -84,13 +84,13 @@ src = src[:m.start()] + text + src[m.end():]
 
 with io.open(path, "w", encoding="utf-8", errors="surrogateescape") as f:
 	f.write(src)
-print("Patched: status window is 200x110 on Linux.")
+print("Patched: status window is 200x110 on native Wayland, full canvas on XWayland/X11.")
 PY
 
 # --- Verify the result --------------------------------------------------------
 patch_verify_marker
 patch_expect_shape -qF \
-	'return(/*'"$MARKER"'*/"linux"===process.platform)?{x:' \
+	'return(/*'"$MARKER"'*/"linux"===process.platform' \
 	-- 'compact status-bounds branch not in expected form.'
 
 patch_finish "status window compacted on Linux in $BUNDLE"
