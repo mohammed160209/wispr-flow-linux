@@ -165,6 +165,34 @@ HELPER_BIN="$PWD/../wispr-flow-helper/target/release/wispr-flow-linux-helper" \
 
 ---
 
+## Frequently Asked Questions (FAQ)
+
+<details>
+<summary><strong>Does Wispr Flow work on Arch Linux, CachyOS, Ubuntu, Debian, and Fedora?</strong></summary>
+
+Yes. Run [`install.sh`](install.sh) (`curl -fsSL https://raw.githubusercontent.com/mohammed160209/wispr-flow-linux/main/install.sh | bash`) on any `x86_64` Linux distribution. It auto-installs dependencies with `pacman`, `apt`, or `dnf`, extracts the verified AppImage into `~/.local/share/wispr-flow`, configures desktop & CLI launchers, and sets `/dev/uinput` permissions.
+</details>
+
+<details>
+<summary><strong>Does Wispr Flow Notetaker record system audio (Google Meet, Zoom, Teams, browser) on Linux?</strong></summary>
+
+Yes. Unlike standard Electron wrappers where Notetaker only hears your microphone, [`wispr-flow-helper`](https://github.com/mohammed160209/wispr-flow-helper) captures PipeWire `@DEFAULT_MONITOR@` in-process and mixes it in parallel with your mic—even when audio switches between laptop speakers, wired headsets, or Bluetooth earbuds. Use **System Tray → Notetaker Audio Input** to switch live between **Both**, **System Audio Only**, or **Microphone Only**.
+</details>
+
+<details>
+<summary><strong>How does the floating Status pill stay unclipped and clickable on GNOME Wayland?</strong></summary>
+
+The desktop wrapper sets `WISPR_USE_X11=1` on GNOME sessions and uses `6 px` padded dynamic `XShape` regions plus a `requestAnimationFrame` spring-animation tracker so background clicks pass through cleanly while expanded banners and meeting pills never clip on left/right/top edges. It coexists with Dash to Dock (`intellihide-ignore-wispr-overlay`).
+</details>
+
+<details>
+<summary><strong>How do I update when upstream Wispr Flow releases a new Windows version?</strong></summary>
+
+Rerun the one-line `install.sh` command once a new GitHub Release is published, or update `scripts/setup/installer-pin.sh` and rebuild locally with `./build.sh -b appimage` (no `pacman -Syu` auto-update exists unless you install via an AUR package built from [`scripts/aur/PKGBUILD.template`](scripts/aur/PKGBUILD.template)).
+</details>
+
+---
+
 ## License & Disclaimer
 
 This is an unofficial community Linux port and clean-room native helper not affiliated with Wispr. The build scripts, Electron patches, installer, and Rust helper ([`wispr-flow-helper`](https://github.com/mohammed160209/wispr-flow-helper)) are released into the public domain under the [Unlicense](UNLICENSE). Upstream Wispr Flow assets fetched at build time remain proprietary and subject to Wispr's terms.
