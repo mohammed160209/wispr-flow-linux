@@ -38,7 +38,10 @@ INSTALL_DIR="${DATA_HOME}/wispr-flow"
 WRAPPER_BIN="${BIN_HOME}/wispr-flow"
 DESKTOP_FILE="${DATA_HOME}/applications/wispr-flow.desktop"
 AUTOSTART_FILE="${CONFIG_HOME}/autostart/wispr-flow.desktop"
-ICON_FILE="${DATA_HOME}/icons/hicolor/512x512/apps/wispr-flow.png"
+ICON_PNG_256="${DATA_HOME}/icons/hicolor/256x256/apps/wispr-flow.png"
+ICON_SVG="${DATA_HOME}/icons/hicolor/scalable/apps/wispr-flow.svg"
+ICON_APP_PNG="${DATA_HOME}/icons/hicolor/256x256/apps/ai.wisprflow.WisprFlow.png"
+ICON_APP_SVG="${DATA_HOME}/icons/hicolor/scalable/apps/ai.wisprflow.WisprFlow.svg"
 
 FROM_SOURCE=false
 SKIP_UDEV=false
@@ -93,7 +96,9 @@ fi
 if [[ $UNINSTALL == true ]]; then
 	info 'Removing Wispr Flow user installation...'
 	rm -rf "$INSTALL_DIR"
-	rm -f "$WRAPPER_BIN" "$DESKTOP_FILE" "$AUTOSTART_FILE" "$ICON_FILE"
+	rm -f "$WRAPPER_BIN" "$DESKTOP_FILE" "$AUTOSTART_FILE" "$ICON_PNG_256" "$ICON_SVG" "$ICON_APP_PNG" "$ICON_APP_SVG"
+	command -v gtk-update-icon-cache >/dev/null 2>&1 \
+		&& gtk-update-icon-cache -f -t "${DATA_HOME}/icons/hicolor" 2>/dev/null || true
 	command -v update-desktop-database >/dev/null 2>&1 \
 		&& update-desktop-database "${DATA_HOME}/applications" 2>/dev/null || true
 	info 'Uninstalled cleanly. User settings under ~/.config/Wispr Flow were preserved.'
@@ -136,11 +141,11 @@ install_runtime_deps() {
 			fi
 			;;
 		debian)
-			local pkgs=(pipewire-pulse libpulse0 wl-clipboard xclip curl desktop-file-utils libgtk-3-0 libnss3 libasound2t64)
-			# Fallback for older Ubuntu/Debian without t64 naming
-			if ! apt-cache show libasound2t64 >/dev/null 2>&1; then
-				pkgs=(pipewire-pulse libpulse0 wl-clipboard xclip curl desktop-file-utils libgtk-3-0 libnss3 libasound2)
-			fi
+			local gtk_pkg='libgtk-3-0'
+			apt-cache show libgtk-3-0t64 >/dev/null 2>&1 && gtk_pkg='libgtk-3-0t64'
+			local asound_pkg='libasound2'
+			apt-cache show libasound2t64 >/dev/null 2>&1 && asound_pkg='libasound2t64'
+			local pkgs=(pipewire-pulse libpulse0 wl-clipboard xclip curl desktop-file-utils "$gtk_pkg" libnss3 "$asound_pkg" libxtst6 libxss1 libnotify4)
 			local p
 			for p in "${pkgs[@]}"; do
 				if ! dpkg -s "$p" >/dev/null 2>&1; then
@@ -286,13 +291,29 @@ exec "${INSTALL_DIR}/AppRun" "\$@"
 EOF
 chmod 0755 "$WRAPPER_BIN"
 
-# --- Desktop entry & icon -----------------------------------------------------
-mkdir -p "$(dirname "$DESKTOP_FILE")" "$(dirname "$ICON_FILE")"
+# --- Desktop entry & icons ----------------------------------------------------
+mkdir -p "$(dirname "$DESKTOP_FILE")" \
+	"$(dirname "$ICON_PNG_256")" \
+	"$(dirname "$ICON_SVG")"
 
-SRC_ICON="$(find "$INSTALL_DIR" -name '*.png' | sort | tail -1 || true)"
-if [[ -n $SRC_ICON ]]; then
-	install -Dm644 "$SRC_ICON" "$ICON_FILE"
+SRC_PNG="$(find "$INSTALL_DIR" -path '*/256x256/*' -name '*.png' | head -1 || true)"
+[[ -n $SRC_PNG ]] || SRC_PNG="$(find "$INSTALL_DIR" -name '*.png' | sort | tail -1 || true)"
+if [[ -n $SRC_PNG ]]; then
+	install -Dm644 "$SRC_PNG" "$ICON_PNG_256"
+	install -Dm644 "$SRC_PNG" "$ICON_APP_PNG"
 fi
+
+SRC_SVG="$(find "$INSTALL_DIR" -name '*.svg' | head -1 || true)"
+if [[ -n $SRC_SVG ]]; then
+	install -Dm644 "$SRC_SVG" "$ICON_SVG"
+	install -Dm644 "$SRC_SVG" "$ICON_APP_SVG"
+fi
+
+if [[ ! -f "${DATA_HOME}/icons/hicolor/index.theme" && -f /usr/share/icons/hicolor/index.theme ]]; then
+	install -Dm644 /usr/share/icons/hicolor/index.theme "${DATA_HOME}/icons/hicolor/index.theme"
+fi
+command -v gtk-update-icon-cache >/dev/null 2>&1 \
+	&& gtk-update-icon-cache -f -t "${DATA_HOME}/icons/hicolor" 2>/dev/null || true
 
 cat > "$DESKTOP_FILE" <<EOF
 [Desktop Entry]

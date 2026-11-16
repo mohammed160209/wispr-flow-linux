@@ -61,10 +61,16 @@ EOF
 			"${pkgdir}/usr/share/applications/${pkgname}.desktop"
 	fi
 
-	local icon
-	icon=$(find squashfs-root -name '*.png' | sort | tail -1)
-	if [[ -n "${icon}" ]]; then
-		install -Dm644 "${icon}" \
-			"${pkgdir}/usr/share/icons/hicolor/512x512/apps/wispr-flow.png"
+	local icon_png icon_svg
+	icon_png=$(find squashfs-root -path '*/256x256/*' -name '*.png' | head -1 || true)
+	[[ -n "${icon_png}" ]] || icon_png=$(find squashfs-root -name '*.png' | sort | tail -1 || true)
+	if [[ -n "${icon_png}" ]]; then
+		install -Dm644 "${icon_png}" \
+			"${pkgdir}/usr/share/icons/hicolor/256x256/apps/wispr-flow.png"
+	fi
+	icon_svg=$(find squashfs-root -name '*.svg' | head -1 || true)
+	if [[ -n "${icon_svg}" ]]; then
+		install -Dm644 "${icon_svg}" \
+			"${pkgdir}/usr/share/icons/hicolor/scalable/apps/wispr-flow.svg"
 	fi
 }
