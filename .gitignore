@@ -11,6 +11,7 @@
 /tools/
 
 # === Local prebuilt binary inputs (staged via env, never committed) ===
+/bin/
 /helper-bin/
 /native-modules/
 

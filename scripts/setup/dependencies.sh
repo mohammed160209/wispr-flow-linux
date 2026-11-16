@@ -49,6 +49,11 @@ check_dependencies() {
 	esac
 
 	# command -> package, per distro family.
+	declare -A arch_pkgs=(
+		[7z]='p7zip' [wrestool]='icoutils' [icotool]='icoutils'
+		[convert]='imagemagick' [rsync]='rsync' [node]='nodejs' [npx]='npm'
+		[cargo]='rust' [python3]='python' [wget]='wget' [curl]='curl'
+	)
 	declare -A debian_pkgs=(
 		[7z]='p7zip-full' [wrestool]='icoutils' [icotool]='icoutils'
 		[convert]='imagemagick' [rsync]='rsync' [node]='nodejs' [npx]='npm'
@@ -68,6 +73,7 @@ check_dependencies() {
 	_pkg_for() {
 		local cmd="$1"
 		case "$distro_family" in
+			arch)   printf '%s' "${arch_pkgs[$cmd]:-}" ;;
 			debian) printf '%s' "${debian_pkgs[$cmd]:-}" ;;
 			rpm)    printf '%s' "${rpm_pkgs[$cmd]:-}" ;;
 			*)      printf '' ;;
@@ -125,6 +131,10 @@ check_dependencies() {
 	fi
 
 	case "$distro_family" in
+		arch)
+			# shellcheck disable=SC2086  # word-splitting deps_to_install is intended
+			$sudo_cmd pacman -S --needed --noconfirm $deps_to_install || die "'pacman -S' failed"
+			;;
 		debian)
 			$sudo_cmd apt update || die "'apt update' failed"
 			# shellcheck disable=SC2086  # word-splitting deps_to_install is intended

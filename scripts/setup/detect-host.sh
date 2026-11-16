@@ -79,6 +79,9 @@ detect_distro() {
 	elif [[ -f /etc/redhat-release ]]; then
 		distro_family='rpm'
 		echo "Detected Red Hat-based: $(cat /etc/redhat-release)"
+	elif [[ -f /etc/arch-release ]] || ([[ -f /etc/os-release ]] && grep -Eqi '^ID(_LIKE)?=.*arch' /etc/os-release); then
+		distro_family='arch'
+		echo 'Detected Arch Linux / Arch-based distribution (CachyOS, EndeavourOS, Manjaro, etc.)'
 	elif [[ -f /etc/debian_version ]]; then
 		distro_family='debian'
 		echo "Detected Debian-based (version $(cat /etc/debian_version))"
