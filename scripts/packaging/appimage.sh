@@ -256,6 +256,10 @@ say "Building AppImage with $appimagetool"
 OUT="$WORK/${NAME}-${APP_VERSION}-${ARCH}.AppImage"
 export ARCH
 
+runtime_args=()
+local_runtime="$PROJECT_ROOT/bin/runtime-${ARCH}"
+[[ -f $local_runtime ]] && runtime_args=(--runtime-file "$local_runtime")
+
 # In CI, embed update information and emit a .zsync delta so published AppImages
 # self-update via AppImageUpdate / appimaged. Local builds skip it (there is no
 # release to update from). Format:
@@ -269,7 +273,7 @@ if [[ "${GITHUB_ACTIONS:-}" == 'true' ]]; then
   fi
   update_info="gh-releases-zsync|wispr-flow-linux|wispr-flow-linux|latest|${NAME}-*-${ARCH}.AppImage.zsync"
   say "Embedding AppImage update info: $update_info"
-  if ! "$appimagetool" --updateinformation "$update_info" "$APPDIR" "$OUT"; then
+  if ! "$appimagetool" "${runtime_args[@]}" --updateinformation "$update_info" "$APPDIR" "$OUT"; then
     die "appimagetool failed to build the AppImage"
   fi
   if [[ -f "$OUT.zsync" ]]; then
@@ -278,7 +282,7 @@ if [[ "${GITHUB_ACTIONS:-}" == 'true' ]]; then
     warn 'zsync delta not generated (zsyncmake missing?); auto-update will be slower.'
   fi
 else
-  if ! "$appimagetool" "$APPDIR" "$OUT"; then
+  if ! "$appimagetool" "${runtime_args[@]}" "$APPDIR" "$OUT"; then
     die "appimagetool failed to build the AppImage"
   fi
 fi

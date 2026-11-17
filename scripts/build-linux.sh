@@ -199,6 +199,58 @@ DOC
 }
 
 #===============================================================================
+# Normalize Linux SVG/PNG app icons (76% safe zone matching GNOME HIG) and
+# system tray icons (22x22 @1x / 44x44 @2x with ~64% glyph fill so GNOME AppIndicator
+# renders them at the exact native top-bar footprint instead of overflowing).
+#===============================================================================
+normalize_linux_icons() {
+  local res_dir="$1"
+  local svg_path="$res_dir/assets/logos/wispr-flow.svg"
+  local png_path="$res_dir/assets/logos/wispr-logo.png"
+  local tray_1x="$res_dir/assets/tray/TrayIconWindows.png"
+  local tray_2x="$res_dir/assets/tray/TrayIconWindows@2x.png"
+
+  [[ -f "$svg_path" ]] || return 0
+
+  python3 - "$svg_path" <<'PY'
+import io, re, sys
+p = sys.argv[1]
+s = io.open(p, "r", encoding="utf-8").read()
+if "WISPR_GNOME_HIG_PAD" not in s:
+    m = re.match(r'(<svg[^>]*>)(.*)(</svg>\s*)$', s, flags=re.DOTALL)
+    if m:
+        out = m.group(1) + '\n  <!-- WISPR_GNOME_HIG_PAD -->\n  <g transform="translate(3.84 3.84) scale(0.76)">' + m.group(2) + '  </g>\n' + m.group(3)
+        io.open(p, "w", encoding="utf-8").write(out)
+PY
+
+  if command -v rsvg-convert >/dev/null 2>&1; then
+    local tmp_tray_svg
+    tmp_tray_svg="$(mktemp --suffix=.svg)"
+    python3 - "$svg_path" "$tmp_tray_svg" <<'PY'
+import io, re, sys
+s = io.open(sys.argv[1], "r", encoding="utf-8").read()
+m = re.match(r'(<svg[^>]*>)(.*)(</svg>\s*)$', s, flags=re.DOTALL)
+if m:
+    inner = re.sub(r'<!--\s*WISPR_GNOME_HIG_PAD\s*-->\s*<g transform="[^"]*">(.*)</g>\s*', r'\1', m.group(2), flags=re.DOTALL)
+    tray_svg = m.group(1) + '\n  <g transform="translate(5.76 5.76) scale(0.64)">' + inner + '  </g>\n' + m.group(3)
+    io.open(sys.argv[2], "w", encoding="utf-8").write(tray_svg)
+PY
+    [[ -d "$(dirname "$png_path")" ]] && rsvg-convert -w 256 -h 256 "$svg_path" -o "$png_path"
+    if [[ -d "$(dirname "$tray_1x")" && -s "$tmp_tray_svg" ]]; then
+      rsvg-convert -w 22 -h 22 "$tmp_tray_svg" -o "$tray_1x"
+      rsvg-convert -w 44 -h 44 "$tmp_tray_svg" -o "$tray_2x"
+    fi
+    rm -f "$tmp_tray_svg"
+    auto "Normalized GNOME HIG app icon (76%) & top-bar tray icons (22x22 / 44x44 @ 64%)."
+  elif command -v convert >/dev/null 2>&1 && [[ -f "$tray_1x" ]]; then
+    convert "$tray_1x" -background none -gravity center -resize 14x14 -extent 22x22 "PNG32:$tray_1x"
+    convert "$tray_1x" -background none -gravity center -resize 28x28 -extent 44x44 "PNG32:$tray_2x"
+    [[ -f "$png_path" ]] && convert "$png_path" -background none -gravity center -resize 195x195 -extent 256x256 "PNG32:$png_path"
+    auto "Normalized PNG app & tray icon margins via ImageMagick."
+  fi
+}
+
+#===============================================================================
 # Step 2: stage resources + unpack app.asar  [AUTO]
 #===============================================================================
 step2_stage_resources() {
@@ -228,6 +280,7 @@ step2_stage_resources() {
       || cp -a "$RESOURCES_SRC/." "$STAGE/"   # fallback if rsync absent
     chmod -R u+rwX,go+rX,go-w "$STAGE" \
       || die "Failed to normalize permissions under $STAGE"
+    normalize_linux_icons "$STAGE"
   else
     warn "Resources source missing -- skipping copy."
   fi
