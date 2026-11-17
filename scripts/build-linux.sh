@@ -380,6 +380,10 @@ step3_patch_bundle() {
     auto "Running linux-system-audio.sh on $target_bundle"
     bash "$SCRIPT_DIR/patches/linux-system-audio.sh" "$target_bundle" \
       || die "linux-system-audio.sh failed -- see its output above."
+    # Keep Meeting Recorder ("Notetaker") as a normal window and move/raise to active workspace on pill click.
+    auto "Running linux-meeting-recorder.sh on $target_bundle"
+    bash "$SCRIPT_DIR/patches/linux-meeting-recorder.sh" "$target_bundle" \
+      || die "linux-meeting-recorder.sh failed -- see its output above."
 
     # Renderer + preload patches live alongside the main bundle under .webpack/.
     local webpack_root="${target_bundle%/main/index.js}"
@@ -393,6 +397,15 @@ step3_patch_bundle() {
         || die "Renderer-chrome patch failed -- see linux-renderer-chrome.sh output above."
     else
       die "Hub renderer bundle not found at $hub_renderer (its marker is required)."
+    fi
+    # Keep full Microphone input device list in Status Pill right-click submenu during Notetaker (default Auto).
+    local context_menu_renderer="$webpack_root/renderer/contextMenu/index.js"
+    if [[ -f "$context_menu_renderer" ]]; then
+      auto "Running linux-context-menu-notetaker-mic.sh on $context_menu_renderer"
+      bash "$SCRIPT_DIR/patches/linux-context-menu-notetaker-mic.sh" "$context_menu_renderer" \
+        || die "ContextMenu Notetaker mic patch failed -- see output above."
+    else
+      die "ContextMenu renderer bundle not found at $context_menu_renderer (its marker is required)."
     fi
     # Treat Linux like Windows for renderer platform UI WITHOUT lying to the
     # bridge: leave window.electron.platform.isWindows reporting its real value

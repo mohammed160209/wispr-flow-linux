@@ -1,7 +1,7 @@
 # Wispr Flow for Linux — Arch Linux, CachyOS, Ubuntu, Fedora & Any Distro
 
 [![Version](https://img.shields.io/badge/Wispr%20Flow-1.6.1483-blue)](https://github.com/mohammed160209/wispr-flow-linux/releases)
-[![Helper](https://img.shields.io/badge/Rust%20Helper-v0.1.5-orange)](https://github.com/mohammed160209/wispr-flow-helper)
+[![Helper](https://img.shields.io/badge/Rust%20Helper-v0.1.6-orange)](https://github.com/mohammed160209/wispr-flow-helper)
 [![Audio](https://img.shields.io/badge/PipeWire-System%20Audio%20%2B%20Mic-success)](#pipewire-system-audio-capture-notetaker)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-lightgrey)](UNLICENSE)
 

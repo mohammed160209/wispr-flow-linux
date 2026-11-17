@@ -70,6 +70,8 @@ MARKERS=(
   "status-compact: linux status window shrunk to pill size|F|WISPR_LINUX_STATUS_COMPACT"
   "status-picker-anchor: pickers offset by the status window on Wayland|F|WISPR_LINUX_PICKER_ANCHOR"
   "system-audio: linux native system audio capture enabled|F|WISPR_LINUX_SYSTEM_AUDIO"
+  "meeting-recorder: linux normal window focus and mic pin|F|WISPR_LINUX_MEETING_RECORDER"
+  "context-menu-notetaker-mic: keep input device list in status menu during Notetaker|F|WISPR_LINUX_CONTEXT_MENU_NOTETAKER_MIC"
 )
 
 missing=0

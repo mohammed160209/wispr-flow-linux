@@ -1444,3 +1444,33 @@ JS
 	[[ "$status" -ne 0 ]]
 	! grep -q 'WISPR_LINUX_SYSTEM_AUDIO' "$FIX"
 }
+
+# =============================================================================
+# linux-meeting-recorder.sh & linux-context-menu-notetaker-mic.sh
+# =============================================================================
+
+@test "meeting-recorder: enables Linux active-workspace focus and mic pin" {
+	cat > "$FIX" <<'JS'
+const N=(e,t=E(e),n="focused")=>{if(!e.isDestroyed()){if(t||e.setBounds(_()),!c.tD)return e.isMinimized()&&e.restore(),void("inactive"===n?e.showInactive():(e.isVisible()||e.show(),e.focus(),"focused"!==n||e.isDestroyed()||T()));try{e.setVisibleOnAllWorkspaces(!0,g.Jq)}finally{}}}
+JS
+	run bash "$PATCH_DIR/linux-meeting-recorder.sh" "$FIX"
+	[[ "$status" -eq 0 ]]
+	grep -qF 'WISPR_LINUX_MEETING_RECORDER' "$FIX"
+	grep -qF 'globalThis.__wisprActivateRecorder' "$FIX"
+	grep -qF 'wispr-linux:pin-notetaker-mic' "$FIX"
+	node_check "$FIX"
+	assert_idempotent "$PATCH_DIR/linux-meeting-recorder.sh" "$FIX"
+}
+
+@test "context-menu-notetaker-mic: keeps input device list during Notetaker with Auto default" {
+	cat > "$FIX" <<'JS'
+const Ys=()=>{const r=(0,q.CU)(e=>e.audioDevices??Gs),[s,_]=(0,b.useState)(!1),l=(0,q.CU)(e=>(0,B.Zb)((0,U.vP)(e))),Ee=(0,b.useCallback)((t,n)=>{const i=e("settings_languages_auto_detect_toggle"),r=e("settings_microphone_built_in_recommended"),l=e("settings_microphone_unknown");let d,c,u;if(n){c=e("hub_status_menu_microphone_notetaker",{ns:"hub"});d=[];u={type:te.v.Text,text:"dummy-description-longer-than-100-chars-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890"}}else{c=e("hub_status_menu_microphone",{ns:"hub"});const n=e=>({type:te.v.Button,label:Mn(Rn(e.name,i),r),disabled:null!=e.unavailableReason,onClick:()=>{v.m.info(`Selected microphone in status bubble: ${e.deviceId}, name: ${e.name}`),qn({deviceId:e.deviceId,name:e.name,isVirtual:e.isVirtual},"flow_bar",{rankedAudioDevices:o.user.rankedAudioDevices,connectedDeviceIds:new Set(t.map(e=>e.deviceId)),updateUserPrefs:a,fromDevice:t.find(e=>e.selected)})},selected:e.selected}),p=(e,t)=>e.selected?1:t.selected?-1:0,m=t.filter(e=>!e.isVirtual),h=t.filter(e=>e.isVirtual),g=t.some(e=>e.selected&&e.isVirtual),b=s||g,f=m.map(n);if(f.sort(p),h.length>0){if(b){const e=h.map(n);e.sort(p),f.push(...e)}f.push({type:te.v.Button,label:b?e("hub_status_menu_microphone_hide_virtual",{ns:"hub"}):e("hub_status_menu_microphone_show_virtual",{ns:"hub",count:h.length}),keepOpen:!0,onClick:()=>{if(b){if(g){const e=t.find(e=>e.deviceId===Pn);qn({deviceId:Pn,name:e?.name??i},"flow_bar",{rankedAudioDevices:o.user.rankedAudioDevices,connectedDeviceIds:new Set(t.map(e=>e.deviceId)),updateUserPrefs:a,fromDevice:t.find(e=>e.selected)})}_(!1)}else _(!0)}})}d=f,u={type:te.v.Text,text:(0,C.jsxs)("div",{children:[(0,C.jsx)("span",{children:`${e("settings_context_menu_mic_in_use_prefix")} `}),(0,C.jsx)("span",{children:Mn(Rn(Fn(t,l),i),r)})]})}}w(e=>e.map(e=>e.type===te.v.Submenu&&e.id===W.bE.MICROPHONE?{...e,label:c,items:d,itemBelowSelected:u}:e))},[e,a,o.user.rankedAudioDevices,s]);return(0,b.useEffect)(()=>{Ee(r,l)},[r,l,Ee]),null};
+JS
+	run bash "$PATCH_DIR/linux-context-menu-notetaker-mic.sh" "$FIX"
+	[[ "$status" -eq 0 ]]
+	grep -qF 'WISPR_LINUX_CONTEXT_MENU_NOTETAKER_MIC' "$FIX"
+	grep -qF '__wisprNtMic' "$FIX"
+	grep -qF '"default"' "$FIX"
+	node_check "$FIX"
+	assert_idempotent "$PATCH_DIR/linux-context-menu-notetaker-mic.sh" "$FIX"
+}
