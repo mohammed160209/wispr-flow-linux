@@ -73,11 +73,27 @@
 				return map[c] !== undefined ? map[c] : m;
 			});
 		};
-		var execLines = function () {
+		var launcherTarget = function () {
 			var ai = appImage();
+			if (ai) return ai;
+			try {
+				var appRun = path.resolve(path.dirname(process.execPath), "../../..", "AppRun");
+				if (present(appRun)) return appRun;
+			} catch (e) {}
+			return "wispr-flow";
+		};
+		var useX11 = function () {
+			return process.argv.indexOf("--ozone-platform=x11") !== -1 ||
+				process.env.WISPR_USE_X11 === "1";
+		};
+		var execLines = function () {
+			var target = launcherTarget();
+			var quoted = target.indexOf("/") !== -1 ? quoteArg(target) : target;
+			var execCmd = (useX11() ? "/usr/bin/env WISPR_USE_X11=1 " : "") +
+				quoted + " --hidden";
 			return [
-				"Exec=" + (ai ? quoteArg(ai) : "wispr-flow") + " --hidden",
-				"TryExec=" + escString(ai || "wispr-flow")
+				"Exec=" + execCmd,
+				"TryExec=" + escString(target)
 			];
 		};
 		// TryExec semantics: an absolute path must be executable, a bare
@@ -111,6 +127,7 @@
 				"Name=Wispr Flow"
 			].concat(execLines(), [
 				"Icon=wispr-flow",
+				"StartupWMClass=wispr-flow",
 				"Terminal=false",
 				"X-GNOME-Autostart-enabled=true",
 				OURS,
@@ -118,20 +135,36 @@
 			]).join("\n"));
 		};
 
+		var shouldSeedAutostart = function () {
+			try {
+				var cfg = JSON.parse(fs.readFileSync(
+					path.join(configHome, "Wispr Flow", "config.json"), "utf8"));
+				return !!(cfg && cfg.prefs && cfg.prefs.user &&
+					cfg.prefs.user.openAtLogin !== false);
+			} catch (e) { return false; }
+		};
 		var repaired = false;
 		var repair = function () {
 			if (repaired) return;
 			repaired = true;
 			try {
 				var text = read();
+				if (text === null) {
+					if (shouldSeedAutostart()) write();
+					return;
+				}
 				if (!ours(text)) return;
 				var m = text.match(/^TryExec=(.*)$/m);
-				if (m && present(unescString(m[1]))) return;
+				var targetOk = m && present(unescString(m[1]));
+				var x11Ok = !useX11() || text.indexOf("WISPR_USE_X11=1") !== -1;
+				if (targetOk && x11Ok) return;
 				var want = execLines();
 				text = text.replace(/^TryExec=.*\n?/mg, "");
 				text = /^Exec=.*$/m.test(text)
 					? text.replace(/^Exec=.*$/m, function () { return want.join("\n"); })
 					: text.replace(/\n?$/, "\n" + want.join("\n") + "\n");
+				if (!/^StartupWMClass=/m.test(text))
+					text = text.replace(/\n?$/, "\nStartupWMClass=wispr-flow\n");
 				writeAtomic(text);
 			} catch (e) {}
 		};
