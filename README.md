@@ -1,11 +1,11 @@
 # Wispr Flow for Linux — Arch Linux, CachyOS, Ubuntu, Fedora & Any Distro
 
-[![Version](https://img.shields.io/badge/Wispr%20Flow-1.6.1483-blue)](https://github.com/mohammed160209/wispr-flow-linux/releases)
+[![Version](https://img.shields.io/badge/Wispr%20Flow-1.6.1537-blue)](https://github.com/mohammed160209/wispr-flow-linux/releases)
 [![Helper](https://img.shields.io/badge/Rust%20Helper-v0.1.6-orange)](https://github.com/mohammed160209/wispr-flow-helper)
 [![Audio](https://img.shields.io/badge/PipeWire-System%20Audio%20%2B%20Mic-success)](#pipewire-system-audio-capture-notetaker)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-lightgrey)](UNLICENSE)
 
-A **maintained, full-featured Linux port of Wispr Flow** (`v1.6.1483`, matching the Windows upstream release) built for **Arch Linux, CachyOS, EndeavourOS, Ubuntu/Debian, Fedora**, and any modern Wayland or X11 Linux distribution.
+A **maintained, full-featured Linux port of Wispr Flow** (`v1.6.1537`, matching the Windows upstream release) built for **Arch Linux, CachyOS, EndeavourOS, Ubuntu/Debian, Fedora**, and any modern Wayland or X11 Linux distribution.
 
 Unlike basic Electron wrappers, this build pairs the patched Windows Wispr Flow app with a clean-room **Rust helper (`wispr-flow-linux-helper`)** that restores **PipeWire system audio capture for Notetaker meetings**, global push-to-talk shortcuts, virtual keyboard paste injection, and an **unclipped always-on-top floating Status pill**.
 
@@ -49,7 +49,7 @@ cd wispr-flow-linux
 | **Floating Status Pill & Animations** | Full `512×614` (`1184×1420` HiDPI) XWayland canvas + `6 px` padded `XShape` + `requestAnimationFrame` spring tracker | Click-through outside the pill; expanded banners, Command mode, and meeting pills never clip on edges |
 | **Global Shortcuts & Text Injection** | In-process `/dev/uinput` virtual keyboard + `wl-clipboard` (Wayland) or `XTEST` + `xclip` (X11) | Push-to-talk, hold-to-talk, Command mode, and instant paste across terminals, browsers, and native apps |
 | **GNOME & Dash to Dock Coexistence** | Bundled GNOME Shell 45–50+ bridge extension + `_NET_WM_WINDOW_TYPE`/`UTILITY` stacking up to `1600×1600` | Keeps pill above windows without triggering Dash to Dock intellihide jitter (`intellihide-ignore-wispr-overlay`) |
-| **Windows Upstream Parity** | Pinned to official Windows **`1.6.1483`** installer with automated tripwire validation | Same UI, Notetaker workflows, connectors, and core app behavior as Windows/macOS |
+| **Windows Upstream Parity** | Pinned to official Windows **`1.6.1537`** installer with automated tripwire validation | Same UI, Notetaker workflows, connectors, and core app behavior as Windows/macOS |
 
 ---
 
@@ -60,7 +60,7 @@ A normal user only runs **Layer 4** (or [`install.sh`](install.sh)), because **L
 ```text
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ 4. Main Electron App & Packaging  (mohammed160209/wispr-flow-linux)     │
-│    Unpacks Windows Wispr Flow 1.6.1483, injects Linux/Notetaker/pill    │
+│    Unpacks Windows Wispr Flow 1.6.1537, injects Linux/Notetaker/pill    │
 │    patches, embeds the helper binary, and packages AppImage / AUR / deb │
 ├─────────────────────────────────────────────────────────────────────────┤
 │ 3. Native Rust Helper Binary      (mohammed160209/wispr-flow-helper)    │
@@ -110,12 +110,12 @@ pactl info | grep -E "Server Name|Default Sink"
 - If using Dash to Dock with intellihide, keep `intellihide-ignore-wispr-overlay` enabled (`true`) so the floating status pill never keeps the dock permanently raised or hidden incorrectly.
 
 ### Manual AppImage Download
-Prebuilt verified AppImages (`wispr-flow-1.6.1483-1.0.5-x86_64.AppImage`) are available on the [Releases page](https://github.com/mohammed160209/wispr-flow-linux/releases):
+Prebuilt verified AppImages (`wispr-flow-1.6.1537-1.0.6-x86_64.AppImage`) are available on the [Releases page](https://github.com/mohammed160209/wispr-flow-linux/releases):
 
 ```bash
-chmod +x wispr-flow-1.6.1483-1.0.5-x86_64.AppImage
-./wispr-flow-1.6.1483-1.0.5-x86_64.AppImage --install-udev-rules
-WISPR_USE_X11=1 ./wispr-flow-1.6.1483-1.0.5-x86_64.AppImage --no-sandbox
+chmod +x wispr-flow-1.6.1537-1.0.6-x86_64.AppImage
+./wispr-flow-1.6.1537-1.0.6-x86_64.AppImage --install-udev-rules
+WISPR_USE_X11=1 ./wispr-flow-1.6.1537-1.0.6-x86_64.AppImage --no-sandbox
 ```
 
 ---
