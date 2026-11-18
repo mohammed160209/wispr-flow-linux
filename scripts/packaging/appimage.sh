@@ -116,7 +116,11 @@ helper_bin="\$app_dir/resources/Release/wispr-flow-linux-helper"
 # shellcheck source=/dev/null
 source "\$app_dir/launcher-common.sh"
 
-# Handle --doctor before anything else.
+# Handle --version and --doctor before anything else.
+if [[ "\${1:-}" == '--version' || "\${1:-}" == '-v' ]]; then
+	echo "$NAME $APP_VERSION"
+	exit 0
+fi
 if [[ "\${1:-}" == '--doctor' ]]; then
 	run_doctor "\$helper_bin" "\$electron_bin"
 	exit \$?

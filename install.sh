@@ -325,13 +325,26 @@ Icon=wispr-flow
 Terminal=false
 Type=Application
 Categories=Utility;AudioVideo;Audio;
+StartupNotify=true
 StartupWMClass=wispr-flow
+SingleMainWindow=true
 Keywords=voice;dictation;speech;transcription;notetaker;pipewire;
 EOF
 
 if [[ $ENABLE_AUTOSTART == true ]]; then
 	mkdir -p "$(dirname "$AUTOSTART_FILE")"
-	cp -f "$DESKTOP_FILE" "$AUTOSTART_FILE"
+	cat > "$AUTOSTART_FILE" <<EOF
+[Desktop Entry]
+Type=Application
+Name=Wispr Flow
+Exec=${WRAPPER_BIN} --hidden
+TryExec=${WRAPPER_BIN}
+Icon=wispr-flow
+StartupWMClass=wispr-flow
+Terminal=false
+X-GNOME-Autostart-enabled=true
+X-Wispr-Flow-Linux-Autostart=true
+EOF
 	info "Autostart enabled at $AUTOSTART_FILE"
 fi
 
