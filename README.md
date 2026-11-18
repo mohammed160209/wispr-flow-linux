@@ -9,6 +9,8 @@ A **maintained, full-featured Linux port of Wispr Flow** (`v1.6.1537`, matching 
 
 Unlike basic Electron wrappers, this build pairs the patched Windows Wispr Flow app with a clean-room **Rust helper (`wispr-flow-linux-helper`)** that restores **PipeWire system audio capture for Notetaker meetings**, global push-to-talk shortcuts, virtual keyboard paste injection, and an **unclipped always-on-top floating Status pill**.
 
+![Wispr Flow for Linux Demo](docs/media/wispr-flow-linux-demo.gif)
+
 ---
 
 ## One-Command Quick Install (Arch Linux / CachyOS / Ubuntu / Fedora)
