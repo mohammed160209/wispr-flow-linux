@@ -156,7 +156,8 @@
 				if (!ours(text)) return;
 				var m = text.match(/^TryExec=(.*)$/m);
 				var targetOk = m && present(unescString(m[1]));
-				var x11Ok = !useX11() || text.indexOf("WISPR_USE_X11=1") !== -1;
+				var hasX11 = text.indexOf("WISPR_USE_X11=1") !== -1;
+				var x11Ok = useX11() === hasX11;
 				if (targetOk && x11Ok) return;
 				var want = execLines();
 				text = text.replace(/^TryExec=.*\n?/mg, "");

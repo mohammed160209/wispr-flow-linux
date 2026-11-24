@@ -200,8 +200,8 @@ DOC
 
 #===============================================================================
 # Normalize Linux SVG/PNG app icons (88% safe zone matching GNOME app icons) and
-# system tray icons (22x22 @1x / 44x44 @2x with 78% fill so GNOME AppIndicator
-# renders them cleanly alongside 16px panel icons without overflowing).
+# system tray icons (64x64 @1x / 128x128 @2x with 74% fill so GNOME AppIndicator
+# renders them crisply at HiDPI/fractional scales without clipping or blur).
 #===============================================================================
 normalize_linux_icons() {
   local res_dir="$1"
@@ -219,7 +219,10 @@ s = io.open(p, "r", encoding="utf-8").read()
 m = re.match(r'(<svg[^>]*>)(.*)(</svg>\s*)$', s, flags=re.DOTALL)
 if m:
     inner = re.sub(r'\s*<!--\s*WISPR_GNOME_HIG_PAD\s*-->\s*<g transform="[^"]*">(.*)</g>\s*', r'\1', m.group(2), flags=re.DOTALL)
-    out = m.group(1) + '\n  <!-- WISPR_GNOME_HIG_PAD -->\n  <g transform="translate(1.92 1.92) scale(0.88)">' + inner + '  </g>\n' + m.group(3)
+    defs = re.findall(r'<defs\b[^>]*>.*?</defs>', inner, flags=re.DOTALL)
+    body = re.sub(r'<defs\b[^>]*>.*?</defs>', '', inner, flags=re.DOTALL).strip()
+    defs_block = ('\n  ' + '\n  '.join(d.strip() for d in defs)) if defs else ''
+    out = m.group(1) + defs_block + '\n  <!-- WISPR_GNOME_HIG_PAD -->\n  <g transform="translate(1.92 1.92) scale(0.88)">\n  ' + body + '\n  </g>\n' + m.group(3)
     io.open(p, "w", encoding="utf-8").write(out)
 PY
 
@@ -232,19 +235,22 @@ s = io.open(sys.argv[1], "r", encoding="utf-8").read()
 m = re.match(r'(<svg[^>]*>)(.*)(</svg>\s*)$', s, flags=re.DOTALL)
 if m:
     inner = re.sub(r'\s*<!--\s*WISPR_GNOME_HIG_PAD\s*-->\s*<g transform="[^"]*">(.*)</g>\s*', r'\1', m.group(2), flags=re.DOTALL)
-    tray_svg = m.group(1) + '\n  <g transform="translate(3.52 3.52) scale(0.78)">' + inner + '  </g>\n' + m.group(3)
+    defs = re.findall(r'<defs\b[^>]*>.*?</defs>', inner, flags=re.DOTALL)
+    body = re.sub(r'<defs\b[^>]*>.*?</defs>', '', inner, flags=re.DOTALL).strip()
+    defs_block = ('\n  ' + '\n  '.join(d.strip() for d in defs)) if defs else ''
+    tray_svg = m.group(1) + defs_block + '\n  <g transform="translate(4.16 4.16) scale(0.74)">\n  ' + body + '\n  </g>\n' + m.group(3)
     io.open(sys.argv[2], "w", encoding="utf-8").write(tray_svg)
 PY
     [[ -d "$(dirname "$png_path")" ]] && rsvg-convert -w 256 -h 256 "$svg_path" -o "$png_path"
     if [[ -d "$(dirname "$tray_1x")" && -s "$tmp_tray_svg" ]]; then
-      rsvg-convert -w 22 -h 22 "$tmp_tray_svg" -o "$tray_1x"
-      rsvg-convert -w 44 -h 44 "$tmp_tray_svg" -o "$tray_2x"
+      rsvg-convert -w 64 -h 64 "$tmp_tray_svg" -o "$tray_1x"
+      rsvg-convert -w 128 -h 128 "$tmp_tray_svg" -o "$tray_2x"
     fi
     rm -f "$tmp_tray_svg"
-    auto "Normalized GNOME HIG app icon (88%) & top-bar tray icons (22x22 / 44x44 @ 78%)."
+    auto "Normalized GNOME HIG app icon (88%) & top-bar tray icons (64x64 / 128x128 @ 74%)."
   elif command -v convert >/dev/null 2>&1 && [[ -f "$tray_1x" ]]; then
-    convert "$tray_1x" -background none -gravity center -resize 17x17 -extent 22x22 "PNG32:$tray_1x"
-    convert "$tray_1x" -background none -gravity center -resize 34x34 -extent 44x44 "PNG32:$tray_2x"
+    convert "$tray_1x" -background none -gravity center -resize 47x47 -extent 64x64 "PNG32:$tray_1x"
+    convert "$tray_1x" -background none -gravity center -resize 95x95 -extent 128x128 "PNG32:$tray_2x"
     [[ -f "$png_path" ]] && convert "$png_path" -background none -gravity center -resize 225x225 -extent 256x256 "PNG32:$png_path"
     auto "Normalized PNG app & tray icon margins via ImageMagick."
   fi

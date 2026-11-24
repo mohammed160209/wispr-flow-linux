@@ -122,8 +122,12 @@ if [[ "\${1:-}" == '--version' || "\${1:-}" == '-v' ]]; then
 	exit 0
 fi
 if [[ "\${1:-}" == '--doctor' ]]; then
-	run_doctor "\$helper_bin" "\$electron_bin"
+	APPIMAGE="\${APPIMAGE:-\$appdir}" run_doctor "\$helper_bin" "\$electron_bin"
 	exit \$?
+fi
+
+if [[ -z \${WISPR_USE_X11:-} && -z \${WISPR_USE_WAYLAND:-} && \${XDG_CURRENT_DESKTOP:-} == *GNOME* ]]; then
+	export WISPR_USE_X11=1
 fi
 
 # AppImages can't run a root post-install hook, so the input-access udev rule
@@ -152,6 +156,23 @@ if ! check_display; then
 	echo 'Run from within a Wayland or X11 session, not a TTY.' >&2
 	echo 'Tip: run this AppImage with --doctor to diagnose your setup.' >&2
 	exit 1
+fi
+
+# When launched at login (--hidden), wait briefly for StatusNotifierWatcher so
+# Electron registers a native GNOME/KDE tray icon + DBusMenu instead of racing
+# desktop startup and falling back to XEmbed/GTK.
+if [[ " \$* " == *" --hidden "* && -n \${DBUS_SESSION_BUS_ADDRESS:-} ]] && command -v gdbus >/dev/null 2>&1; then
+	sni_tries=0
+	while (( sni_tries < 20 )); do
+		if gdbus call --session --dest org.freedesktop.DBus \
+			--object-path /org/freedesktop/DBus \
+			--method org.freedesktop.DBus.NameHasOwner \
+			org.kde.StatusNotifierWatcher 2>/dev/null | grep -q 'true'; then
+			break
+		fi
+		sleep 0.25
+		sni_tries=\$((sni_tries + 1))
+	done
 fi
 
 detect_display_backend

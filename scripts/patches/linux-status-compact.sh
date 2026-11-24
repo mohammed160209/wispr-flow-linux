@@ -76,7 +76,7 @@ if len(ms) != 1:
 m = ms[0]
 o, l, c, d = m['o'], m['l'], m['c'], m['d']
 text = (
-	'return(/*' + marker + '*/"linux"===process.platform&&!process.argv.includes("--ozone-platform=x11"))'
+	'return(/*' + marker + '*/"linux"===process.platform&&!!process.env.WAYLAND_DISPLAY&&!process.argv.includes("--ozone-platform=x11"))'
 	f'?{{x:{o}+({l}-200)/2,y:{c}+{d}-110,width:200,height:110}}'
 	':' + m.group(0)[len('return'):]
 )
