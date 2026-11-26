@@ -158,12 +158,12 @@ if ! check_display; then
 	exit 1
 fi
 
-# When launched at login (--hidden), wait briefly for StatusNotifierWatcher so
+# When launched at login (--hidden), wait up to 15s for StatusNotifierWatcher so
 # Electron registers a native GNOME/KDE tray icon + DBusMenu instead of racing
 # desktop startup and falling back to XEmbed/GTK.
-if [[ " \$* " == *" --hidden "* && -n \${DBUS_SESSION_BUS_ADDRESS:-} ]] && command -v gdbus >/dev/null 2>&1; then
+if [[ " \$* " == *" --hidden "* && (-n \${DBUS_SESSION_BUS_ADDRESS:-} || -S \${XDG_RUNTIME_DIR:-}/bus) ]] && command -v gdbus >/dev/null 2>&1; then
 	sni_tries=0
-	while (( sni_tries < 20 )); do
+	while (( sni_tries < 60 )); do
 		if gdbus call --session --dest org.freedesktop.DBus \
 			--object-path /org/freedesktop/DBus \
 			--method org.freedesktop.DBus.NameHasOwner \
